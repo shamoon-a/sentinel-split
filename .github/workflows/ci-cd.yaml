@@ -37,18 +37,21 @@ jobs:
         working-directory: terraform/envs/poc
         run: terraform validate
 
-      - name: Terraform Lint
-        uses: terraform-linters/tflint-action@v0.50.3
-        with:
-          working_directory: terraform/envs/poc
+      - name: Install TFLint
+        run: |
+          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+
+      - name: Run TFLint
+        working-directory: terraform/envs/poc
+        run: tflint
 
       - name: Terraform Plan
         working-directory: terraform/envs/poc
         run: terraform plan -out=tfplan
 
-      - name: Terraform Apply
-        working-directory: terraform/envs/poc
-        run: terraform apply -auto-approve tfplan
+      #- name: Terraform Apply
+       # working-directory: terraform/envs/poc
+        #run: terraform apply -auto-approve tfplan
 
   kubernetes-backend:
     name: Deploy Backend to Backend Cluster
