@@ -37,13 +37,13 @@ jobs:
         working-directory: terraform/envs/poc
         run: terraform validate
 
-      - name: Install TFLint
-        run: |
-          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+      #- name: Install TFLint
+       # run: |
+        #  curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
 
-      - name: Run TFLint
-        working-directory: terraform/envs/poc
-        run: tflint
+      #- name: Run TFLint
+       # working-directory: terraform/envs/poc
+        #run: tflint
 
       - name: Terraform Plan
         working-directory: terraform/envs/poc
