@@ -4,7 +4,6 @@ rapyd assignment
 # Sentinel Split – Infrastructure & CI/CD Documentation
 
 Repository: [https://github.com/shamoon-a/sentinel-split.git]
-Public Entry Point (Gateway Load Balancer): **http://a0078d494803a414e849002c77507829-557630061.us-east-1.elb.amazonaws.com/**
 
 ---
 
