@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-gateway-config
+data:
+  nginx.conf: |
+    events {}
+
+    http {
+      upstream backend {
+        server backend.default.svc.cluster.local:80;
+      }
+
+      server {
+        listen 80;
+
+        location / {
+          proxy_pass http://backend;
+        }
+      }
+    }

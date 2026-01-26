@@ -1,0 +1,13 @@
+# Terraform
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+*.tfvars
+*.log
+
+# OS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
