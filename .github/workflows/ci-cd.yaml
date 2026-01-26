@@ -1,4 +1,4 @@
-name: CI/CD - Terraform + Kubernetes
+name: CI/CD – Terraform + Kubernetes
 
 on:
   push:
@@ -6,7 +6,6 @@ on:
       - main
 
 env:
-  AWS_REGION: us-east-1
   TF_VERSION: 1.6.6
 
 jobs:
@@ -17,6 +16,13 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -44,8 +50,8 @@ jobs:
         working-directory: terraform/envs/poc
         run: terraform apply -auto-approve tfplan
 
-  kubernetes:
-    name: Kubernetes Validate & Deploy
+  kubernetes-backend:
+    name: Deploy Backend to Backend Cluster
     runs-on: ubuntu-latest
     needs: terraform
 
@@ -60,35 +66,48 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Update kubeconfig
+      - name: Update kubeconfig (backend)
         run: |
           aws eks update-kubeconfig \
-            --name ${{ secrets.EKS_CLUSTER_NAME }} \
+            --name ${{ secrets.EKS_BACKEND_CLUSTER }} \
             --region ${{ secrets.AWS_REGION }}
 
-      - name: Install kubeval
+      - name: Validate backend manifests
+        run: kubectl apply --dry-run=client -R -f k8s/backend/
+
+      - name: Deploy backend
+        run: kubectl apply -R -f k8s/backend/
+
+      - name: Verify backend rollout
+        run: kubectl rollout status deploy/backend
+
+  kubernetes-gateway:
+    name: Deploy Gateway to Gateway Cluster
+    runs-on: ubuntu-latest
+    needs: terraform
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update kubeconfig (gateway)
         run: |
-          curl -L https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz \
-          | tar xz
-          sudo mv kubeval /usr/local/bin/
+          aws eks update-kubeconfig \
+            --name ${{ secrets.EKS_GATEWAY_CLUSTER }} \
+            --region ${{ secrets.AWS_REGION }}
 
-      - name: Validate Kubernetes manifests (kubeval)
-        run: |
-          kubeval k8s/backend/*.yaml
-          kubeval k8s/gateway/*.yaml
+      - name: Validate gateway manifests
+        run: kubectl apply --dry-run=client -R -f k8s/gateway/
 
-      - name: Dry-run apply Kubernetes manifests
-        run: |
-          kubectl apply --dry-run=client -f k8s/backend/
-          kubectl apply --dry-run=client -f k8s/gateway/
+      - name: Deploy gateway
+        run: kubectl apply -R -f k8s/gateway/
 
-      - name: Deploy Backend
-        run: kubectl apply -f k8s/backend/
-
-      - name: Deploy Gateway
-        run: kubectl apply -f k8s/gateway/
-
-      - name: Verify rollout
-        run: |
-          kubectl rollout status deploy/backend
-          kubectl rollout status deploy/nginx-gateway
+      - name: Verify gateway rollout
+        run: kubectl rollout status deploy/nginx-gateway
