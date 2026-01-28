@@ -27,3 +27,11 @@ output "backend_vpc_cidr" {
   description = "Backend VPC CIDR"
   value       = module.backend_vpc.cidr
 }
+
+output "gateway_private_rt" {
+  value = module.gateway_vpc.private_route_table_id
+}
+
+output "backend_private_rt" {
+  value = module.backend_vpc.private_route_table_id
+}
