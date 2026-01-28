@@ -1,11 +1,3 @@
-variable "vpc_a_id" {}
-variable "vpc_b_id" {}
-variable "cidr_a" {}
-variable "cidr_b" {}
-variable "rt_a" {}
-variable "rt_b" {}
-
-
 resource "aws_vpc_peering_connection" "this" {
   vpc_id      = var.vpc_a_id
   peer_vpc_id = var.vpc_b_id
