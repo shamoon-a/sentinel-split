@@ -56,9 +56,7 @@ resource "aws_iam_role_policy_attachment" "backend_nodes_ecr" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-############################
 # EKS CLUSTER POLICY
-############################
 
 resource "aws_iam_role_policy_attachment" "gateway_cluster_policy" {
   role       = aws_iam_role.eks_gateway_cluster.name

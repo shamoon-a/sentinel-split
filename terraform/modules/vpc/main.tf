@@ -1,6 +1,6 @@
-############################
+
 # VPC
-############################
+
 resource "aws_vpc" "this" {
   cidr_block           = var.cidr
   enable_dns_support   = true
@@ -11,9 +11,9 @@ resource "aws_vpc" "this" {
   }
 }
 
-############################
+
 # Internet Gateway
-############################
+
 resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
 
@@ -22,9 +22,9 @@ resource "aws_internet_gateway" "this" {
   }
 }
 
-############################
+
 # Public Subnet (for NAT)
-############################
+
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.this.id
   cidr_block              = cidrsubnet(var.cidr, 8, 100)
@@ -36,9 +36,9 @@ resource "aws_subnet" "public" {
   }
 }
 
-############################
+
 # Public Route Table
-############################
+
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
 
@@ -57,9 +57,9 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-############################
+
 # NAT Gateway
-############################
+
 resource "aws_eip" "nat" {
   domain = "vpc"
 }
@@ -75,9 +75,9 @@ resource "aws_nat_gateway" "this" {
   }
 }
 
-############################
+
 # Private Subnets (EKS Nodes)
-############################
+
 resource "aws_subnet" "private" {
   count             = 2
   vpc_id            = aws_vpc.this.id
@@ -89,9 +89,8 @@ resource "aws_subnet" "private" {
   }
 }
 
-############################
 # Private Route Table
-############################
+
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.this.id
 
@@ -111,9 +110,8 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private.id
 }
 
-############################
 # Security Group (EKS)
-############################
+
 resource "aws_security_group" "eks" {
   name   = "${var.name}-eks-sg"
   vpc_id = aws_vpc.this.id
@@ -137,33 +135,4 @@ resource "aws_security_group_rule" "backend_allow_gateway" {
   protocol          = "tcp"
   security_group_id = aws_security_group.eks.id
   cidr_blocks       = ["10.0.0.0/16"] # Gateway VPC CIDR
-}
-
-############################
-# Outputs
-############################
-output "vpc_id" {
-  value = aws_vpc.this.id
-}
-
-output "private_subnets" {
-  value = aws_subnet.private[*].id
-}
-
-output "public_subnet" {
-  value = aws_subnet.public.id
-}
-
-output "eks_sg" {
-  value = aws_security_group.eks.id
-}
-
-output "cidr" {
-  value = var.cidr
-}
-
-# 🔥 ADD THIS OUTPUT (THIS FIXES EVERYTHING)
-output "private_route_table_id" {
-  description = "Private route table ID"
-  value       = aws_route_table.private.id
 }
