@@ -1,6 +1,5 @@
-############################
 # Outputs
-############################
+
 output "vpc_id" {
   value = aws_vpc.this.id
 }
@@ -21,7 +20,6 @@ output "cidr" {
   value = var.cidr
 }
 
-# 🔥 ADD THIS OUTPUT (THIS FIXES EVERYTHING)
 output "private_route_table_id" {
   description = "Private route table ID"
   value       = aws_route_table.private.id
